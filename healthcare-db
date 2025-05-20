@@ -1,0 +1,86 @@
+-- ================================================
+-- Clinic Booking System Database Schema
+-- ================================================
+
+-- Drop all tables if they already exist (optional cleanup)
+DROP TABLE IF EXISTS Appointment_Medications, Bills, Appointments, Medications, Doctors, Patients, Departments;
+
+-- ============================
+-- 1. Departments
+-- ============================
+CREATE TABLE Departments (
+    department_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- ============================
+-- 2. Doctors
+-- ============================
+CREATE TABLE Doctors (
+    doctor_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    phone VARCHAR(15),
+    specialization VARCHAR(100),
+    department_id INT NOT NULL,
+    FOREIGN KEY (department_id) REFERENCES Departments(department_id)
+);
+
+-- ============================
+-- 3. Patients
+-- ============================
+CREATE TABLE Patients (
+    patient_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    date_of_birth DATE,
+    gender ENUM('Male', 'Female', 'Other'),
+    phone VARCHAR(15) NOT NULL UNIQUE,
+    email VARCHAR(100) UNIQUE
+);
+
+-- ============================
+-- 4. Appointments
+-- ============================
+CREATE TABLE Appointments (
+    appointment_id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    doctor_id INT NOT NULL,
+    appointment_date DATETIME NOT NULL,
+    reason TEXT,
+    status ENUM('Scheduled', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
+    FOREIGN KEY (patient_id) REFERENCES Patients(patient_id),
+    FOREIGN KEY (doctor_id) REFERENCES Doctors(doctor_id)
+);
+
+-- ============================
+-- 5. Bills
+-- ============================
+CREATE TABLE Bills (
+    bill_id INT AUTO_INCREMENT PRIMARY KEY,
+    appointment_id INT NOT NULL UNIQUE,
+    amount DECIMAL(10, 2) NOT NULL,
+    payment_status ENUM('Pending', 'Paid') DEFAULT 'Pending',
+    issued_date DATE DEFAULT CURRENT_DATE,
+    FOREIGN KEY (appointment_id) REFERENCES Appointments(appointment_id)
+);
+
+-- ============================
+-- 6. Medications
+-- ============================
+CREATE TABLE Medications (
+    medication_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT
+);
+
+-- ============================
+-- 7. Appointment_Medications (M:N)
+-- ============================
+CREATE TABLE Appointment_Medications (
+    appointment_id INT NOT NULL,
+    medication_id INT NOT NULL,
+    dosage VARCHAR(50),
+    PRIMARY KEY (appointment_id, medication_id),
+    FOREIGN KEY (appointment_id) REFERENCES Appointments(appointment_id),
+    FOREIGN KEY (medication_id) REFERENCES Medications(medication_id)
+);
